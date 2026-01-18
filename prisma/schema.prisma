@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Service {
+  id        String   @id @default(cuid())
+  name      String
+  category  String   // SMM, RDP/VPS, OTP, AI
+  price     Float
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  serviceId String
+  quantity  Int         @default(1)
+  status    OrderStatus @default(PENDING)
+  note      String?
+  total     Float
+  createdAt DateTime    @default(now())
+
+  user      User        @relation(fields: [userId], references: [id])
+  service   Service     @relation(fields: [serviceId], references: [id])
+}
+
+model FileItem {
+  id        String   @id @default(cuid())
+  name      String
+  size      Int
+  mime      String?
+  url       String?
+  createdAt DateTime @default(now())
+}
